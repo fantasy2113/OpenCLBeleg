@@ -1,18 +1,19 @@
 package de.jos;
 
-import static org.jocl.CL.*;
+import org.jocl.*;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.image.*;
-import java.io.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
+import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 
-import javax.imageio.ImageIO;
-
-import org.jocl.*;
+import static org.jocl.CL.*;
 
 
 public class App {
@@ -182,7 +183,7 @@ public class App {
     clEnqueueNDRangeKernel(commandQueue, kernel3, 2, null, new long[]{in3.getWidth(), in3.getHeight()}, null, 0, null, kernelEvent3);
     clEnqueueNDRangeKernel(commandQueue, kernel4, 2, null, new long[]{in4.getWidth(), in4.getHeight()}, null, 0, null, kernelEvent4);
 
-    //clWaitForEvents(4, new cl_event[]{kernelEvent1, kernelEvent2, kernelEvent3, kernelEvent4});
+    clWaitForEvents(4, new cl_event[]{kernelEvent1, kernelEvent2, kernelEvent3, kernelEvent4});
 
     cl_event readEvent1 = new cl_event();
     cl_event readEvent2 = new cl_event();
@@ -199,7 +200,7 @@ public class App {
     clEnqueueReadImage(commandQueue, outMem3, true, new long[3], new long[]{in3.getWidth(), in3.getHeight(), 1}, (long) in3.getWidth() * Sizeof.cl_uint, 0, Pointer.to(dataOut3), 0, null, readEvent3);
     clEnqueueReadImage(commandQueue, outMem4, true, new long[3], new long[]{in4.getWidth(), in4.getHeight(), 1}, (long) in4.getWidth() * Sizeof.cl_uint, 0, Pointer.to(dataOut4), 0, null, readEvent4);
 
-    //clWaitForEvents(4, new cl_event[]{readEvent1, readEvent2, readEvent3, readEvent4});
+    clWaitForEvents(4, new cl_event[]{readEvent1, readEvent2, readEvent3, readEvent4});
 
     ImageIO.write(out1, "png", new File("results/out1.png"));
     ImageIO.write(out2, "png", new File("results/out2.png"));
