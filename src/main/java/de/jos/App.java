@@ -70,7 +70,7 @@ public class App {
   }
 
   public App() throws Exception {
-    initIn(Objects.requireNonNull(createBufferedImage("src/main/resources/data/lena512color.png")));
+    initIn(Objects.requireNonNull(createBufferedImage("src/main/resources/data/test.jpg")));
     initOut();
     initCL();
     runOpenClProgramWithSource();
@@ -88,47 +88,37 @@ public class App {
     final long deviceType = CL_DEVICE_TYPE_ALL;
     final int deviceIndex = 0;
 
-    // Enable exceptions and subsequently omit error checks in this sample
     CL.setExceptionsEnabled(true);
 
-    // Obtain the number of platforms
     int[] numPlatformsArray = new int[1];
     clGetPlatformIDs(0, null, numPlatformsArray);
     int numPlatforms = numPlatformsArray[0];
 
-    // Obtain a platform ID
     cl_platform_id[] platforms = new cl_platform_id[numPlatforms];
     clGetPlatformIDs(platforms.length, platforms, null);
     cl_platform_id platform = platforms[platformIndex];
 
-    // Initialize the context properties
     cl_context_properties contextProperties = new cl_context_properties();
     contextProperties.addProperty(CL_CONTEXT_PLATFORM, platform);
 
-    // Obtain the number of devices for the platform
     int[] numDevicesArray = new int[1];
     clGetDeviceIDs(platform, deviceType, 0, null, numDevicesArray);
     int numDevices = numDevicesArray[0];
 
-    // Obtain a device ID
     cl_device_id[] devices = new cl_device_id[numDevices];
     clGetDeviceIDs(platform, deviceType, numDevices, devices, null);
     cl_device_id device = devices[deviceIndex];
 
-    // Create a context for the selected device
     context = clCreateContext(contextProperties, 1, new cl_device_id[]{device}, null, null, null);
 
-    // Check if images are supported
     int[] imageSupport = new int[1];
     clGetDeviceInfo(device, CL.CL_DEVICE_IMAGE_SUPPORT, Sizeof.cl_int, Pointer.to(imageSupport), null);
-    System.out.println("Images supported: " + (imageSupport[0] == 1));
     if (imageSupport[0] == 0) {
       System.out.println("Images are not supported");
       System.exit(1);
       return;
     }
 
-    // Create a command-queue for the selected device
     cl_queue_properties properties = new cl_queue_properties();
     properties.addProperty(CL_QUEUE_PROFILING_ENABLE, 1);
     properties.addProperty(CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, 1);
@@ -136,7 +126,7 @@ public class App {
   }
 
   private void runOpenClProgramWithSource() throws Exception {
-    String programSource = Files.readString(Path.of("src/main/resources/kernels/source.cl"), StandardCharsets.UTF_8);
+    String programSource = Files.readString(Path.of("src/main/resources/kernels/source1.cl"), StandardCharsets.UTF_8);
     cl_program program = clCreateProgramWithSource(context, 1, new String[]{programSource}, null, null);
     clBuildProgram(program, 0, null, null, null, null);
 
@@ -192,7 +182,7 @@ public class App {
     clEnqueueNDRangeKernel(commandQueue, kernel3, 2, null, new long[]{in3.getWidth(), in3.getHeight()}, null, 0, null, kernelEvent3);
     clEnqueueNDRangeKernel(commandQueue, kernel4, 2, null, new long[]{in4.getWidth(), in4.getHeight()}, null, 0, null, kernelEvent4);
 
-    clWaitForEvents(4, new cl_event[]{kernelEvent1, kernelEvent2, kernelEvent3, kernelEvent4});
+    //clWaitForEvents(4, new cl_event[]{kernelEvent1, kernelEvent2, kernelEvent3, kernelEvent4});
 
     cl_event readEvent1 = new cl_event();
     cl_event readEvent2 = new cl_event();
@@ -209,7 +199,7 @@ public class App {
     clEnqueueReadImage(commandQueue, outMem3, true, new long[3], new long[]{in3.getWidth(), in3.getHeight(), 1}, (long) in3.getWidth() * Sizeof.cl_uint, 0, Pointer.to(dataOut3), 0, null, readEvent3);
     clEnqueueReadImage(commandQueue, outMem4, true, new long[3], new long[]{in4.getWidth(), in4.getHeight(), 1}, (long) in4.getWidth() * Sizeof.cl_uint, 0, Pointer.to(dataOut4), 0, null, readEvent4);
 
-    clWaitForEvents(4, new cl_event[]{readEvent1, readEvent2, readEvent3, readEvent4});
+    //clWaitForEvents(4, new cl_event[]{readEvent1, readEvent2, readEvent3, readEvent4});
 
     ImageIO.write(out1, "png", new File("results/out1.png"));
     ImageIO.write(out2, "png", new File("results/out2.png"));
